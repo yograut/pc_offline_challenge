@@ -1,0 +1,4 @@
+{
+    "CacheExpirationMin": [10],
+    "RetryReq": [5]
+}
