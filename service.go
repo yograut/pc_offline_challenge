@@ -2,22 +2,18 @@ package main
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"os"
+	"errors"
 	"time"
 
 	"golang.org/x/text/language"
 )
 
+var gConf Conf
+var gCacheMap CacheMap
+
 // Service is a Translator user.
 type Service struct {
 	translatorClient TranslatorAPI
-}
-
-type Conf struct {
-	CacheExpirationMin int
-	RetryReq           int
 }
 
 func NewService() *Service {
@@ -26,30 +22,32 @@ func NewService() *Service {
 		500*time.Millisecond,
 		0.1,
 	)
+	gConf = ReadConf()
+	gCacheMap = *CreateCatch(int64(gConf.CacheExpirationMin))
 
 	return &Service{
 		translatorClient: t,
 	}
 }
 
-func ReadConf() Conf {
-	ConfFile, _ := os.Open("conf.json")
-	//defer file.Close()
-	jsonDecoder := json.NewDecoder(ConfFile)
-	configuration := Conf{}
-	err := jsonDecoder.Decode(&configuration)
-
-	if err == nil {
-		fmt.Println("Error in config", err)
-	}
-	return configuration
-}
-
 func (s *Service) Translate(ctx context.Context, from, to language.Tag, data string) (string, error) {
 
-	// ConfigValue := ReadConf()
-	// if ConfigValue != nil {
+	var pKey = &CatchKey{FromLanguage: from,
+		ToLanguage: to,
+		Data:       data}
 
-	// }
-	return s.translatorClient.Translate(ctx, from, to, data)
+	v, found := GetCache(&gCacheMap, pKey)
+
+	if found {
+		return v.value, errors.New("")
+	} else {
+		//Commented original statement
+		//return s.translatorClient.Translate(ctx, from, to, data)
+
+		str, err := s.translatorClient.Translate(ctx, from, to, data)
+		var pValue = &CatchValue{value: str, createdAt: time.Now().Unix()}
+		UpdateCache(&gCacheMap, pKey, *pValue)
+		return str, err
+	}
+
 }
