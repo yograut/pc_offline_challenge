@@ -37,3 +37,12 @@ We know that translation API calls:
 ## Source code
 
 translator.go and main.go should not be modified. Please use service.go and any new files for the solution.
+
+
+## Added by Yogesh
+## Further improvements
+1. We can delete the catch if not accessed by the application recently. We can discuss ageing.
+2. We can implement log functionality
+    WE can capture and write all errors in one log file. Errors from any operation
+    or from any event, function
+    

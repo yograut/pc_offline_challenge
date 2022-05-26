@@ -1,52 +1,68 @@
 package main
 
+//This module is for caching purpose.
+
 import (
 	"sync"
 	"time"
-
-	"golang.org/x/text/language"
 )
 
+// First structure for from language , To language and data
+// We are making composite key of FL, TL and data
 type CatchKey struct {
-	FromLanguage language.Tag
-	ToLanguage   language.Tag
+	FromLanguage string
+	ToLanguage   string
 	Data         string
 }
 
+// Second structure to create map
+// Here we are using map functionality to handle catche functionality
+// As I am thinking that map is best in memory structure instead of using
+// third party catche technique.
 type CacheMap struct {
-	cm map[*CatchKey]CatchValue
+	cm map[CatchKey]CatchValue
 	cl sync.Mutex
 }
 
+// Third structure to handle value of catche
+// Here we are also capturing creation time of catch which is required to delete catche
 type CatchValue struct {
 	value     string
 	createdAt int64
 }
 
-func CreateCatch(ExpInMin int64) *CacheMap {
-	cm := &CacheMap{cm: make(map[*CatchKey]CatchValue)}
+func CreateCatch(ExpInMin int64) CacheMap {
+	//Initializing catch map object
+	cm := CacheMap{cm: make(map[CatchKey]CatchValue)}
+
+	//Open another thread to check if catched item is near to expire or not
 	go func() {
 		for now := range time.Tick(time.Second) {
+			//while deleting catch, we are locking catch object to prevent unnecessary access.
 			cm.cl.Lock()
 			for k, v := range cm.cm {
-				if now.Unix()-v.createdAt > ExpInMin {
+				//If any key is expired then deleting that key from catched map
+				if int64(now.Unix())-v.createdAt > (ExpInMin * 60) {
 					delete(cm.cm, k)
 				}
 			}
+			//We are relesing lock after fulfillment of operation.
 			cm.cl.Unlock()
 		}
 	}()
 	return cm
 }
 
-func UpdateCache(cm *CacheMap, pKey *CatchKey, pData CatchValue) {
+//Inserting new key with values in catch if it is not available
+func UpdateCache(cm *CacheMap, pKey CatchKey, pData CatchValue) {
 	cm.cl.Lock()
 	cm.cm[pKey] = pData
 
 	cm.cl.Unlock()
 }
 
-func GetCache(cm *CacheMap, pKey *CatchKey) (CatchValue, bool) {
+//Reading catched value of a particular key
+func GetCache(cm *CacheMap, pKey CatchKey) (CatchValue, bool) {
 	cm.cl.Lock()
 	CachedData, found := cm.cm[pKey]
 	cm.cl.Unlock()
