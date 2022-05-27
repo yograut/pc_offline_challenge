@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"golang.org/x/text/language"
@@ -12,10 +13,10 @@ import (
 //Used global variable to store config values and catched map structure
 var gConfMap = map[string]int{}
 
-//var gConfMap
 var gCacheMap CacheMap
 
-//x := map[string]int{}
+var wgrp sync.WaitGroup
+
 // Service is a Translator user.
 type Service struct {
 	translatorClient TranslatorAPI
@@ -30,15 +31,14 @@ func NewService() *Service {
 
 	//Initialize global variables
 	gConfMap = ReadConf()
-	gCacheMap = CreateCatch(int64(gConfMap["CacheExpirationMin"]))
+	gCacheMap = *CreateCatch()
 
 	return &Service{
 		translatorClient: t,
 	}
 }
 
-func (s *Service) Translate(ctx context.Context, from, to language.Tag, data string) (string, error) {
-
+func GenerateKey(from language.Tag, to language.Tag, data string) CatchKey {
 	//Initialize key object with provided values
 	var p1 string = fmt.Sprintf("%v", from)
 	var p2 string = fmt.Sprintf("%v", to)
@@ -47,6 +47,20 @@ func (s *Service) Translate(ctx context.Context, from, to language.Tag, data str
 		ToLanguage: p2,
 		Data:       data}
 
+	return pKey
+}
+
+func (s *Service) Translate(ctx context.Context, from, to language.Tag, data string) (string, error) {
+
+	pKey := GenerateKey(from, to, data)
+
+	//Task 2
+	//Open another thread to check if catched item is elegible to purge
+	wgrp.Add(1)                                                         // increases WaitGroup
+	go ValidateCatch(&gCacheMap, int64(gConfMap["CacheExpirationMin"])) // calls a function as goroutine
+	wgrp.Wait()                                                         // waits until WaitGroup is <= 0
+
+	//Task 3
 	//Checked if provided key is already available in catche
 	v, found := GetCache(&gCacheMap, pKey)
 
@@ -62,6 +76,7 @@ func (s *Service) Translate(ctx context.Context, from, to language.Tag, data str
 		strValue, err := "", errors.New("")
 
 		//we are invoking service for maximum time which is mentioned in config if error occures
+		//Task 1
 		for i := 0; i < int(gConfMap["RetryReq"]); i++ {
 			strValue, err = s.translatorClient.Translate(ctx, from, to, data)
 			if err == nil {

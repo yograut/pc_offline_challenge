@@ -39,10 +39,34 @@ We know that translation API calls:
 translator.go and main.go should not be modified. Please use service.go and any new files for the solution.
 
 
+
 ## Added by Yogesh
+
+## Implementation of Logic 
+I have started the functionality by reading the values from a config file. We have two values which needs to be configured, instead of hard coding those values in code, I have used json file to configured it.
+
+Then I have used a map as a in-memory storage to store catch. I have initialized a catch object in begining.
+
+I have used three structure for catch management. 
+1. To store value 
+2. To store key
+3. To store catched map and mutex
+
+Whenever main module invoking Translate method, 
+I am first checking the key (which is composed of from Lang, To Lang and data) in catch, if key is there in catch then I am sending catched value from catch without hiting third party api. 
+
+If key is not available in catch then I am invoking third party api and storing the value in catch for future reference.
+
+While invoking the api I also implemented the logic of maximum try if api fails to return any values.
+
+I built the logic to expire the catched element after elapsing of configured period of time.
+
+Instead of using any third party catch management, I tried to development own catch management using map data structure and go routine.
+
+
 ## Further improvements
 1. We can delete the catch if not accessed by the application recently. We can discuss ageing.
 2. We can implement log functionality
-    WE can capture and write all errors in one log file. Errors from any operation
-    or from any event, function
+    We can capture and write all errors in one log file. Errors from any operation or from any event, function
+3. We can add more test cases here as I considered only major scenarios.
     

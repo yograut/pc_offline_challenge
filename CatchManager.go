@@ -31,34 +31,39 @@ type CatchValue struct {
 	createdAt int64
 }
 
-func CreateCatch(ExpInMin int64) CacheMap {
-	//Initializing catch map object
-	cm := CacheMap{cm: make(map[CatchKey]CatchValue)}
+func ValidateCatch(cm *CacheMap, ExpInMin int64) {
 
-	//Open another thread to check if catched item is near to expire or not
-	go func() {
-		for now := range time.Tick(time.Second) {
-			//while deleting catch, we are locking catch object to prevent unnecessary access.
-			cm.cl.Lock()
-			for k, v := range cm.cm {
-				//If any key is expired then deleting that key from catched map
-				if int64(now.Unix())-v.createdAt > (ExpInMin * 60) {
-					delete(cm.cm, k)
-				}
-			}
-			//We are relesing lock after fulfillment of operation.
-			cm.cl.Unlock()
+	//while deleting catch, we are locking catch object to prevent unnecessary access by other thread.
+	cm.cl.Lock()
+	for k, v := range cm.cm {
+		//If any key is expired then deleting that key from catched map
+		//Converting minutes to seconds
+		if int64(time.Now().Unix())-v.createdAt > (ExpInMin * 60) {
+
+			delete(cm.cm, k)
 		}
-	}()
+	}
+	//We are relesing lock after fulfillment of operation.
+	cm.cl.Unlock()
+	defer wgrp.Done() //To decrease waitgroup by one.
+
+}
+func CreateCatch() *CacheMap {
+
+	//Initializing catch map object
+	cm := &CacheMap{cm: make(map[CatchKey]CatchValue)}
+
 	return cm
 }
 
 //Inserting new key with values in catch if it is not available
-func UpdateCache(cm *CacheMap, pKey CatchKey, pData CatchValue) {
+func UpdateCache(cm *CacheMap, pKey CatchKey, pData CatchValue) bool {
+	Updated := false
 	cm.cl.Lock()
 	cm.cm[pKey] = pData
-
 	cm.cl.Unlock()
+	Updated = true
+	return Updated
 }
 
 //Reading catched value of a particular key
