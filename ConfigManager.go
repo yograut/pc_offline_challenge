@@ -19,7 +19,8 @@ func ReadConf() map[string]int {
 
 	ConfFile, err := os.Open("conf.json")
 
-	//if json file opened successfully then go further else return initialized map object
+	//if json file opened successfully then go further else
+	//return initialized map object
 	if err == nil {
 
 		//Reading json file
@@ -35,6 +36,5 @@ func ReadConf() map[string]int {
 			fmt.Println("Error while reading config file, sending object with 0 values", err)
 		}
 	}
-
 	return confMap
 }

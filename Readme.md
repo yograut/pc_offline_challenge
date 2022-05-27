@@ -14,6 +14,7 @@ They can be treated as separate subtasks and implemented one by one starting fro
 Partial solutions also accepted.
 
 
+
 ## Domain
 
 We are working on the service which uses external 3rd-party translation provider API.
@@ -42,6 +43,7 @@ translator.go and main.go should not be modified. Please use service.go and any 
 
 ## Added by Yogesh
 
+
 ## Implementation of Logic 
 I have started the functionality by reading the values from a config file. We have two values which needs to be configured, instead of hard coding those values in code, I have used json file to configured it.
 
@@ -65,7 +67,7 @@ Instead of using any third party catch management, I tried to development own ca
 
 
 ## Further improvements
-1. We can delete the catch if not accessed by the application recently. We can discuss ageing.
+1. We can delete the catch if not accessed by the application recently. We can discuss ageing. Instead of providing blanket expiration criteria, we can check which key is not accessed in long time and we can delete that key only.
 2. We can implement log functionality
     We can capture and write all errors in one log file. Errors from any operation or from any event, function
 3. We can add more test cases here as I considered only major scenarios.

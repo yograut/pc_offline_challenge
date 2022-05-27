@@ -31,9 +31,6 @@ func TestReadConf(t *testing.T) {
 }
 
 func TestGenerateKey(t *testing.T) {
-	// var from language.Tag
-	// var to language.Tag
-	// var data string
 
 	var pKeyTest = CatchKey{FromLanguage: "en",
 		ToLanguage: "ja",
@@ -48,7 +45,6 @@ func TestGenerateKey(t *testing.T) {
 		t.Error("Test 3 Fail: Expected value of generated key and test key is not same ",
 			pKeyTest, pKey)
 	}
-
 }
 
 func TestUpdateCache(t *testing.T) {
@@ -69,7 +65,6 @@ func TestUpdateCache(t *testing.T) {
 		t.Error("Test 4 Fail: Error while handling catche.",
 			pKeyTest, pValue)
 	}
-
 }
 
 func TestGetCache(t *testing.T) {
