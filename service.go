@@ -69,8 +69,6 @@ func (s *Service) Translate(ctx context.Context, from, to language.Tag, data str
 	if found {
 		return v.value, errors.New("")
 	} else {
-		//Commented original statement
-		//return s.translatorClient.Translate(ctx, from, to, data)
 
 		//If key is not available in catch then invoke service
 		strValue, err := "", errors.New("")

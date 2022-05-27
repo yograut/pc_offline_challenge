@@ -15,7 +15,7 @@ type CatchKey struct {
 	Data         string
 }
 
-// Second structure to create map
+// Second structure to create map. (It contains map structure and mutex.)
 // Here we are using map functionality to handle catche functionality
 // As I am thinking that map is best in memory structure instead of using
 // third party catche technique.
@@ -43,6 +43,7 @@ func ValidateCatch(cm *CacheMap, ExpInMin int64) {
 			delete(cm.cm, k)
 		}
 	}
+
 	//We are relesing lock after fulfillment of operation.
 	cm.cl.Unlock()
 	defer wgrp.Done() //To decrease waitgroup by one.
@@ -52,7 +53,6 @@ func CreateCatch() *CacheMap {
 
 	//Initializing catch map object
 	cm := &CacheMap{cm: make(map[CatchKey]CatchValue)}
-
 	return cm
 }
 
