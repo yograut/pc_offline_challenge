@@ -14,6 +14,7 @@ They can be treated as separate subtasks and implemented one by one starting fro
 Partial solutions also accepted.
 
 
+
 ## Domain
 
 We are working on the service which uses external 3rd-party translation provider API.
@@ -41,6 +42,7 @@ translator.go and main.go should not be modified. Please use service.go and any 
 
 
 ## Added by Yogesh
+
 
 ## Implementation of Logic 
 I have started the functionality by reading the values from a config file. We have two values which needs to be configured, instead of hard coding those values in code, I have used json file to configured it.
